@@ -1,0 +1,78 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"jsonFile" : "directory-.-Debug-d0094a50bb2071803777.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.16"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "3_laba_3_sem",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "3_laba_3_sem::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-3_laba_3_sem-Debug-40753c9a922efec5176a.json",
+					"name" : "3_laba_3_sem",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "3_laba_3_sem_autogen::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-3_laba_3_sem_autogen-Debug-0c2aadbdc7326abd491a.json",
+					"name" : "3_laba_3_sem_autogen",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "3_laba_3_sem_autogen_timestamp_deps::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-3_laba_3_sem_autogen_timestamp_deps-Debug-9cd0dbfa351a6d3255f1.json",
+					"name" : "3_laba_3_sem_autogen_timestamp_deps",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "C:/Users/Admin/CLionProjects/3 laba 3 sem/cmake-build-debug",
+		"source" : "C:/Users/Admin/CLionProjects/3 laba 3 sem"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 6
+	}
+}

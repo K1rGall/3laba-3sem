@@ -1,0 +1,3 @@
+"C:\Program Files\JetBrains\CLion2024.1.4\bin\cmake\win\x64\bin\cmake.exe" -E rm -f CMakeFiles\3_laba_3_sem.dir/objects.a
+C:\PROGRA~1\JETBRA~1\CLION2~1.4\bin\mingw\bin\ar.exe qc CMakeFiles\3_laba_3_sem.dir/objects.a @CMakeFiles\3_laba_3_sem.dir\objects1.rsp
+C:\PROGRA~1\JETBRA~1\CLION2~1.4\bin\mingw\bin\G__~1.EXE -g -Wl,--whole-archive CMakeFiles\3_laba_3_sem.dir/objects.a -Wl,--no-whole-archive -o 3_laba_3_sem.exe -Wl,--out-implib,lib3_laba_3_sem.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\3_laba_3_sem.dir\linkLibs.rsp

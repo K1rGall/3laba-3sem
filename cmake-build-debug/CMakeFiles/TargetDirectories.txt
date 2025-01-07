@@ -1,0 +1,5 @@
+C:/Users/Admin/CLionProjects/3 laba 3 sem/cmake-build-debug/CMakeFiles/3_laba_3_sem.dir
+C:/Users/Admin/CLionProjects/3 laba 3 sem/cmake-build-debug/CMakeFiles/edit_cache.dir
+C:/Users/Admin/CLionProjects/3 laba 3 sem/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+C:/Users/Admin/CLionProjects/3 laba 3 sem/cmake-build-debug/CMakeFiles/3_laba_3_sem_autogen_timestamp_deps.dir
+C:/Users/Admin/CLionProjects/3 laba 3 sem/cmake-build-debug/CMakeFiles/3_laba_3_sem_autogen.dir

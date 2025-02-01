@@ -8,7 +8,6 @@
 #include "DifferentStructures/UnqPtr.h"
 #include <cmath>
 
-// Меню выбора структуры и словаря
 void displayMenu() {
     int structureChoice = 0;
     int dictionaryChoice = 0;
@@ -66,7 +65,6 @@ void displayMenu() {
     }
 }
 
-// Операции для SparseVector
 void handleVectorOperations(UnqPtr<SparseVector<double>> &sparseVector) {
     while (true) {
         int choice;
@@ -115,7 +113,6 @@ void handleVectorOperations(UnqPtr<SparseVector<double>> &sparseVector) {
     }
 }
 
-// Операции для SparseMatrix
 void handleMatrixOperations(UnqPtr<SparseMatrix<double>> &sparseMatrix) {
     while (true) {
         int choice;
@@ -168,7 +165,6 @@ void handleMatrixOperations(UnqPtr<SparseMatrix<double>> &sparseMatrix) {
     }
 }
 
-// Обновление отображения SparseVector
 void updateVectorDisplay(const SparseVector<double> &sparseVector) {
     std::cout << "\nSparse Vector Elements:\n";
     for (int i = 0; i < sparseVector.GetLength(); ++i) {
@@ -181,7 +177,6 @@ void updateVectorDisplay(const SparseVector<double> &sparseVector) {
     }
 }
 
-// Обновление отображения SparseMatrix
 void updateMatrixDisplay(const SparseMatrix<double> &sparseMatrix) {
     std::cout << "\nSparse Matrix Elements:\n";
     for (int i = 0; i < sparseMatrix.GetRows(); ++i) {

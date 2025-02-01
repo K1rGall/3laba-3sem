@@ -19,7 +19,6 @@
 std::vector<std::vector<int>> loadMatrixFromFile(const std::string& filename) {
     std::ifstream infile(filename);
 
-    // Проверяем, удалось ли открыть файл
     if (!infile.is_open()) {
         std::cerr << "Error: Unable to open file: " << filename << std::endl;
         throw std::runtime_error("Failed to open file: " + filename);
@@ -36,12 +35,10 @@ std::vector<std::vector<int>> loadMatrixFromFile(const std::string& filename) {
         throw std::runtime_error("Error reading cols from file");
     }
 
-    // Начало измерения времени
     auto start = std::chrono::high_resolution_clock::now();
 
     std::vector<std::vector<int>> matrix(rows, std::vector<int>(cols));
 
-    // Считываем данные построчно
     for (int i = 0; i < rows; ++i) {
         for (int j = 0; j < cols; ++j) {
             if (!(infile >> matrix[i][j])) {
@@ -52,7 +49,6 @@ std::vector<std::vector<int>> loadMatrixFromFile(const std::string& filename) {
 
     infile.close();
 
-    // Конец измерения времени
     auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed = end - start;
 
@@ -82,28 +78,100 @@ void save_data_to_file(const std::string& filename, const std::vector<Point>& da
     outfile.close();
 }
 
-void plotGraphQt(const std::vector<std::pair<double, double>>& data, const QString& title) {
-    QLineSeries* series = new QLineSeries();
+void plotGraphQtMatrix(const std::vector<std::pair<double, double>>& data_matrix_hash,
+                       const std::vector<std::pair<double, double>>& data_matrix_btree,
+                       const QString& title) {
+    // Create QLineSeries for each matrix dataset
+    QLineSeries* series_matrix_hash = new QLineSeries();
+    QLineSeries* series_matrix_btree = new QLineSeries();
 
-    for (const auto& point : data) {
-        series->append(point.second, point.first); // X = Number of Elements, Y = Time
+    // Add data to the series
+    for (const auto& point : data_matrix_hash) {
+        series_matrix_hash->append(point.second, point.first); // X = Number of Elements, Y = Time
+    }
+    for (const auto& point : data_matrix_btree) {
+        series_matrix_btree->append(point.second, point.first);
     }
 
+    // Create the chart for matrix comparison
     QChart* chart = new QChart();
-    chart->addSeries(series);
+    chart->addSeries(series_matrix_hash);
+    chart->addSeries(series_matrix_btree);
     chart->setTitle(title);
     chart->createDefaultAxes();
 
+    // Set the X-axis
     QValueAxis* axisX = new QValueAxis();
     axisX->setTitleText("Number of Elements");
     axisX->setLabelFormat("%d");
-    chart->setAxisX(axisX, series);
+    chart->setAxisX(axisX, series_matrix_hash); // Set axis for all series
 
+    // Set the Y-axis
     QValueAxis* axisY = new QValueAxis();
     axisY->setTitleText("Time");
     axisY->setLabelFormat("%.2f");
-    chart->setAxisY(axisY, series);
+    chart->setAxisY(axisY, series_matrix_hash); // Set axis for all series
 
+    // Customize series' appearance
+    series_matrix_hash->setName("Matrix Hash");
+    series_matrix_hash->setColor(Qt::red);
+    series_matrix_btree->setName("Matrix BTree");
+    series_matrix_btree->setColor(Qt::blue);
+
+    // Create chart view and layout
+    QChartView* chartView = new QChartView(chart);
+    chartView->setRenderHint(QPainter::Antialiasing);
+
+    QWidget* window = new QWidget();
+    QVBoxLayout* layout = new QVBoxLayout(window);
+    layout->addWidget(chartView);
+
+    window->setWindowTitle(title);
+    window->resize(800, 600);
+    window->show();
+}
+
+void plotGraphQtVector(const std::vector<std::pair<double, double>>& data_vector_hash,
+                       const std::vector<std::pair<double, double>>& data_vector_btree,
+                       const QString& title) {
+    // Create QLineSeries for each vector dataset
+    QLineSeries* series_vector_hash = new QLineSeries();
+    QLineSeries* series_vector_btree = new QLineSeries();
+
+    // Add data to the series
+    for (const auto& point : data_vector_hash) {
+        series_vector_hash->append(point.second, point.first); // X = Number of Elements, Y = Time
+    }
+    for (const auto& point : data_vector_btree) {
+        series_vector_btree->append(point.second, point.first);
+    }
+
+    // Create the chart for vector comparison
+    QChart* chart = new QChart();
+    chart->addSeries(series_vector_hash);
+    chart->addSeries(series_vector_btree);
+    chart->setTitle(title);
+    chart->createDefaultAxes();
+
+    // Set the X-axis
+    QValueAxis* axisX = new QValueAxis();
+    axisX->setTitleText("Number of Elements");
+    axisX->setLabelFormat("%d");
+    chart->setAxisX(axisX, series_vector_hash); // Set axis for all series
+
+    // Set the Y-axis
+    QValueAxis* axisY = new QValueAxis();
+    axisY->setTitleText("Time");
+    axisY->setLabelFormat("%.2f");
+    chart->setAxisY(axisY, series_vector_hash); // Set axis for all series
+
+    // Customize series' appearance
+    series_vector_hash->setName("Vector Hash");
+    series_vector_hash->setColor(Qt::green);
+    series_vector_btree->setName("Vector BTree");
+    series_vector_btree->setColor(Qt::red);
+
+    // Create chart view and layout
     QChartView* chartView = new QChartView(chart);
     chartView->setRenderHint(QPainter::Antialiasing);
 
@@ -167,7 +235,7 @@ void Menu(int argc, char* argv[]) {
         std::cout << "4. Generate Performance Graphs\n";
         std::cout << "5. Manual Trying\n";
         std::cout << "6. Plot Graph from File\n";
-        std::cout << "7. Run All Tests\n";
+        std::cout << "7. Run Main Tests\n";
         std::cout << "8. Test Hashtable\n";
         std::cout << "9. Test General BTree\n";\
         std::cout << "0. Exit\n";
@@ -188,7 +256,6 @@ void Menu(int argc, char* argv[]) {
                 try {
                     QApplication app(argc, argv);
 
-                    // Generate data for graphs
                     const std::vector<Point> result_time_matrix_hash = {
                             {load_test_sparse_matrix(10000000, 100000).first, 100000},
                             {load_test_sparse_matrix(5000000, 50000).first, 50000},
@@ -199,7 +266,7 @@ void Menu(int argc, char* argv[]) {
                             {load_test_sparse_matrix(10000, 100).first, 100}
                     };
 
-                    const std::vector<Point> result_time_matrix_b = {
+                    const std::vector<Point> result_time_matrix_btree = {
                             {load_test_sparse_matrix(10000000, 100000).second, 100000},
                             {load_test_sparse_matrix(5000000, 50000).second, 50000},
                             {load_test_sparse_matrix(1000000, 10000).second, 10000},
@@ -209,6 +276,7 @@ void Menu(int argc, char* argv[]) {
                             {load_test_sparse_matrix(10000, 100).second, 100}
                     };
 
+                    // Generate data for vector graphs
                     const std::vector<Point> result_time_vector_hash = {
                             {load_test_sparse_vector(1000000000, 100000).first, 100000},
                             {load_test_sparse_vector(500000000, 50000).first, 50000},
@@ -219,7 +287,7 @@ void Menu(int argc, char* argv[]) {
                             {load_test_sparse_vector(1000000, 100).first, 100}
                     };
 
-                    const std::vector<Point> result_time_vector_b = {
+                    const std::vector<Point> result_time_vector_btree = {
                             {load_test_sparse_vector(1000000000, 100000).second, 100000},
                             {load_test_sparse_vector(500000000, 50000).second, 50000},
                             {load_test_sparse_vector(100000000, 10000).second, 10000},
@@ -229,11 +297,11 @@ void Menu(int argc, char* argv[]) {
                             {load_test_sparse_vector(1000000, 100).second, 100}
                     };
 
-                    // Display graphs using Qt
-                    plotGraphQt(result_time_matrix_hash, "Matrix Hash Performance");
-                    plotGraphQt(result_time_matrix_b, "Matrix BTree Performance");
-                    plotGraphQt(result_time_vector_hash, "Vector Hash Performance");
-                    plotGraphQt(result_time_vector_b, "Vector BTree Performance");
+                    plotGraphQtMatrix(result_time_matrix_hash, result_time_matrix_btree, "Matrix Performance Comparison");
+
+
+                    plotGraphQtVector(result_time_vector_hash, result_time_vector_btree, "Vector Performance Comparison");
+
 
                     // Run the application
                     app.exec();
@@ -270,34 +338,30 @@ void Menu(int argc, char* argv[]) {
             case 9:{
                 std::cout << "Starting BTree tests..." << std::endl;
 
-                // Создаем экземпляр тестового класса с порядком дерева (например, 3)
                 BTreeTest btreeTest(3);
 
-                // Добавление элементов
                 btreeTest.AddElement(10, "Value10");
                 btreeTest.AddElement(20, "Value20");
                 btreeTest.AddElement(5, "Value5");
                 btreeTest.AddElement(15, "Value15");
                 btreeTest.AddElement(25, "Value25");
 
-                // Удаление элемента
                 btreeTest.RemoveElement(20);
 
-                // Отображение дерева
                 std::cout << "\nDisplaying tree:" << std::endl;
                 btreeTest.DisplayTree();
 
-                // Проверка баланса дерева
                 std::cout << "\nChecking tree balance:" << std::endl;
                 btreeTest.CheckBalance();
 
-                // Заполнение случайными значениями
                 std::cout << "\nFilling tree with random elements:" << std::endl;
                 btreeTest.FillRandom(10, 1, 50);
 
-                // Отображение дерева после заполнения
                 std::cout << "\nDisplaying tree after random fill:" << std::endl;
                 btreeTest.DisplayTree();
+
+                std::cout << "\nChecking tree balance:" << std::endl;
+                btreeTest.CheckBalance();
 
                 std::cout << "\nAll tests completed!" << std::endl;}
                 break;

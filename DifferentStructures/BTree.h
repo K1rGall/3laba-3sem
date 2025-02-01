@@ -156,10 +156,10 @@ void BTree<TKey, TElement>::Add(const TKey &key, const TElement &element) {
     }
 
     if (root->numKeys == 2 * order - 1) {
-        ShrdPtr<Node> s(new Node(false, order));
-        s->children[0] = root;
-        SplitChild(s, 0);
-        root = s;
+        ShrdPtr<Node> newRoot(new Node(false, order));
+        newRoot->children[0] = root;
+        SplitChild(newRoot, 0);
+        root = newRoot;
     }
 
     InsertNonFull(root, key, element);
@@ -167,60 +167,60 @@ void BTree<TKey, TElement>::Add(const TKey &key, const TElement &element) {
 }
 
 template<typename TKey, typename TElement>
-void BTree<TKey, TElement>::InsertNonFull(ShrdPtr<Node> x, const TKey &key, const TElement &value) {
-    int i = x->numKeys - 1;
+void BTree<TKey, TElement>::InsertNonFull(ShrdPtr<Node> node, const TKey &key, const TElement &value) {
+    int index = node->numKeys - 1;
 
-    if (x->isLeaf) {
-        while (i >= 0 && key < x->keys[i]) {
-            x->keys[i + 1] = x->keys[i];
-            x->values[i + 1] = x->values[i];
-            --i;
+    if (node->isLeaf) {
+        while (index >= 0 && key < node->keys[index]) {
+            node->keys[index + 1] = node->keys[index];
+            node->values[index + 1] = node->values[index];
+            --index;
         }
-        x->keys[i + 1] = key;
-        x->values[i + 1] = value;
-        ++x->numKeys;
+        node->keys[index + 1] = key;
+        node->values[index + 1] = value;
+        ++node->numKeys;
     } else {
-        while (i >= 0 && key < x->keys[i])
-            --i;
-        ++i;
-        if (x->children[i]->numKeys == 2 * order - 1) {
-            SplitChild(x, i);
-            if (key > x->keys[i])
-                ++i;
+        while (index >= 0 && key < node->keys[index])
+            --index;
+        ++index;
+        if (node->children[index]->numKeys == 2 * order - 1) {
+            SplitChild(node, index);
+            if (key > node->keys[index])
+                ++index;
         }
-        InsertNonFull(x->children[i], key, value);
+        InsertNonFull(node->children[index], key, value);
     }
 }
 
 template<typename TKey, typename TElement>
-void BTree<TKey, TElement>::SplitChild(ShrdPtr<Node> x, int i) {
-    ShrdPtr<Node> y = x->children[i];
-    ShrdPtr<Node> z(new Node(y->isLeaf, order));
-    z->numKeys = order - 1;
+void BTree<TKey, TElement>::SplitChild(ShrdPtr<Node> parentNode, int childIndex) {
+    ShrdPtr<Node> oldChild = parentNode->children[childIndex];
+    ShrdPtr<Node> newChild(new Node(oldChild->isLeaf, order));
+    newChild->numKeys = order - 1;
 
-    for (int j = 0; j < order - 1; ++j) {
-        z->keys[j] = y->keys[j + order];
-        z->values[j] = y->values[j + order];
+    for (int i = 0; i < order - 1; ++i) {
+        newChild->keys[i] = oldChild->keys[i + order];
+        newChild->values[i] = oldChild->values[i + order];
     }
 
-    if (!y->isLeaf) {
-        for (int j = 0; j < order; ++j)
-            z->children[j] = y->children[j + order];
+    if (!oldChild->isLeaf) {
+        for (int i = 0; i < order; ++i)
+            newChild->children[i] = oldChild->children[i + order];
     }
 
-    y->numKeys = order - 1;
+    oldChild->numKeys = order - 1;
 
-    for (int j = x->numKeys; j >= i + 1; --j)
-        x->children[j + 1] = x->children[j];
-    x->children[i + 1] = z;
+    for (int i = parentNode->numKeys; i >= childIndex + 1; --i)
+        parentNode->children[i + 1] = parentNode->children[i];
+    parentNode->children[childIndex + 1] = newChild;
 
-    for (int j = x->numKeys - 1; j >= i; --j) {
-        x->keys[j + 1] = x->keys[j];
-        x->values[j + 1] = x->values[j];
+    for (int i = parentNode->numKeys - 1; i >= childIndex; --i) {
+        parentNode->keys[i + 1] = parentNode->keys[i];
+        parentNode->values[i + 1] = parentNode->values[i];
     }
-    x->keys[i] = y->keys[order - 1];
-    x->values[i] = y->values[order - 1];
-    ++x->numKeys;
+    parentNode->keys[childIndex] = oldChild->keys[order - 1];
+    parentNode->values[childIndex] = oldChild->values[order - 1];
+    ++parentNode->numKeys;
 }
 
 template<typename TKey, typename TElement>
@@ -229,18 +229,18 @@ TElement BTree<TKey, TElement>::Get(const TKey &key) const {
 }
 
 template<typename TKey, typename TElement>
-TElement BTree<TKey, TElement>::Search(ShrdPtr<Node> x, const TKey &key) const {
-    int i = 0;
-    while (i < x->numKeys && key > x->keys[i])
-        ++i;
+TElement BTree<TKey, TElement>::Search(ShrdPtr<Node> node, const TKey &key) const {
+    int index = 0;
+    while (index < node->numKeys && key > node->keys[index])
+        ++index;
 
-    if (i < x->numKeys && key == x->keys[i])
-        return x->values[i];
+    if (index < node->numKeys && key == node->keys[index])
+        return node->values[index];
 
-    if (x->isLeaf)
+    if (node->isLeaf)
         throw std::runtime_error("Key not found.");
     else
-        return Search(x->children[i], key);
+        return Search(node->children[index], key);
 }
 
 template<typename TKey, typename TElement>
@@ -256,21 +256,21 @@ bool BTree<TKey, TElement>::ContainsKey(const TKey &key) const {
 
 template<typename TKey, typename TElement>
 void BTree<TKey, TElement>::Update(const TKey &key, const TElement &element) {
-    ShrdPtr<Node> x = root;
+    ShrdPtr<Node> node = root;
     while (true) {
-        int i = 0;
-        while (i < x->numKeys && key > x->keys[i])
-            ++i;
+        int index = 0;
+        while (index < node->numKeys && key > node->keys[index])
+            ++index;
 
-        if (i < x->numKeys && key == x->keys[i]) {
-            x->values[i] = element;
+        if (index < node->numKeys && key == node->keys[index]) {
+            node->values[index] = element;
             return;
         }
 
-        if (x->isLeaf)
+        if (node->isLeaf)
             throw std::runtime_error("Key not found.");
 
-        x = x->children[i];
+        node = node->children[index];
     }
 }
 
@@ -292,97 +292,97 @@ void BTree<TKey, TElement>::Remove(const TKey &key) {
 }
 
 template<typename TKey, typename TElement>
-void BTree<TKey, TElement>::RemoveFromNode(ShrdPtr<Node> x, const TKey &key) {
-    int idx = 0;
-    while (idx < x->numKeys && x->keys[idx] < key)
-        ++idx;
+void BTree<TKey, TElement>::RemoveFromNode(ShrdPtr<Node> node, const TKey &key) {
+    int index = 0;
+    while (index < node->numKeys && node->keys[index] < key)
+        ++index;
 
-    if (idx < x->numKeys && x->keys[idx] == key) {
-        if (x->isLeaf)
-            RemoveFromLeaf(x, idx);
+    if (index < node->numKeys && node->keys[index] == key) {
+        if (node->isLeaf)
+            RemoveFromLeaf(node, index);
         else
-            RemoveFromNonLeaf(x, idx);
+            RemoveFromNonLeaf(node, index);
     } else {
-        if (x->isLeaf)
+        if (node->isLeaf)
             throw std::runtime_error("Key not found.");
 
-        bool flag = ((idx == x->numKeys));
+        bool flag = ((index == node->numKeys));
 
-        if (x->children[idx]->numKeys < order)
-            Fill(x, idx);
+        if (node->children[index]->numKeys < order)
+            Fill(node, index);
 
-        if (flag && idx > x->numKeys)
-            RemoveFromNode(x->children[idx - 1], key);
+        if (flag && index > node->numKeys)
+            RemoveFromNode(node->children[index - 1], key);
         else
-            RemoveFromNode(x->children[idx], key);
+            RemoveFromNode(node->children[index], key);
     }
 }
 
 template<typename TKey, typename TElement>
-void BTree<TKey, TElement>::RemoveFromLeaf(ShrdPtr<Node> x, int idx) {
-    for (int i = idx + 1; i < x->numKeys; ++i) {
-        x->keys[i - 1] = x->keys[i];
-        x->values[i - 1] = x->values[i];
+void BTree<TKey, TElement>::RemoveFromLeaf(ShrdPtr<Node> node, int index) {
+    for (int i = index + 1; i < node->numKeys; ++i) {
+        node->keys[i - 1] = node->keys[i];
+        node->values[i - 1] = node->values[i];
     }
-    --x->numKeys;
+    --node->numKeys;
 }
 
 template<typename TKey, typename TElement>
-void BTree<TKey, TElement>::RemoveFromNonLeaf(ShrdPtr<Node> x, int idx) {
-    TKey k = x->keys[idx];
+void BTree<TKey, TElement>::RemoveFromNonLeaf(ShrdPtr<Node> node, int index) {
+    TKey key = node->keys[index];
 
-    if (x->children[idx]->numKeys >= order) {
-        TKey predKey = GetPredecessor(x, idx);
-        TElement predValue = x->values[idx];
-        x->keys[idx] = predKey;
-        x->values[idx] = predValue;
-        RemoveFromNode(x->children[idx], predKey);
-    } else if (x->children[idx + 1]->numKeys >= order) {
-        TKey succKey = GetSuccessor(x, idx);
-        TElement succValue = x->values[idx];
-        x->keys[idx] = succKey;
-        x->values[idx] = succValue;
-        RemoveFromNode(x->children[idx + 1], succKey);
+    if (node->children[index]->numKeys >= order) {
+        TKey predKey = GetPredecessor(node, index);
+        TElement predValue = node->values[index];
+        node->keys[index] = predKey;
+        node->values[index] = predValue;
+        RemoveFromNode(node->children[index], predKey);
+    } else if (node->children[index + 1]->numKeys >= order) {
+        TKey succKey = GetSuccessor(node, index);
+        TElement succValue = node->values[index];
+        node->keys[index] = succKey;
+        node->values[index] = succValue;
+        RemoveFromNode(node->children[index + 1], succKey);
     } else {
-        Merge(x, idx);
-        RemoveFromNode(x->children[idx], k);
+        Merge(node, index);
+        RemoveFromNode(node->children[index], key);
     }
 }
 
 template<typename TKey, typename TElement>
-TKey BTree<TKey, TElement>::GetPredecessor(ShrdPtr<Node> x, int idx) {
-    ShrdPtr<Node> cur = x->children[idx];
-    while (!cur->isLeaf)
-        cur = cur->children[cur->numKeys];
-    return cur->keys[cur->numKeys - 1];
+TKey BTree<TKey, TElement>::GetPredecessor(ShrdPtr<Node> node, int index) {
+    ShrdPtr<Node> currentNode = node->children[index];
+    while (!currentNode->isLeaf)
+        currentNode = currentNode->children[currentNode->numKeys];
+    return currentNode->keys[currentNode->numKeys - 1];
 }
 
 template<typename TKey, typename TElement>
-TKey BTree<TKey, TElement>::GetSuccessor(ShrdPtr<Node> x, int idx) {
-    ShrdPtr<Node> cur = x->children[idx + 1];
-    while (!cur->isLeaf)
-        cur = cur->children[0];
-    return cur->keys[0];
+TKey BTree<TKey, TElement>::GetSuccessor(ShrdPtr<Node> node, int index) {
+    ShrdPtr<Node> currentNode = node->children[index + 1];
+    while (!currentNode->isLeaf)
+        currentNode = currentNode->children[0];
+    return currentNode->keys[0];
 }
 
 template<typename TKey, typename TElement>
-void BTree<TKey, TElement>::Fill(ShrdPtr<Node> x, int idx) {
-    if (idx != 0 && x->children[idx - 1]->numKeys >= order)
-        BorrowFromPrev(x, idx);
-    else if (idx != x->numKeys && x->children[idx + 1]->numKeys >= order)
-        BorrowFromNext(x, idx);
+void BTree<TKey, TElement>::Fill(ShrdPtr<Node> node, int index) {
+    if (index != 0 && node->children[index - 1]->numKeys >= order)
+        BorrowFromPrev(node, index);
+    else if (index != node->numKeys && node->children[index + 1]->numKeys >= order)
+        BorrowFromNext(node, index);
     else {
-        if (idx != x->numKeys)
-            Merge(x, idx);
+        if (index != node->numKeys)
+            Merge(node, index);
         else
-            Merge(x, idx - 1);
+            Merge(node, index - 1);
     }
 }
 
 template<typename TKey, typename TElement>
-void BTree<TKey, TElement>::BorrowFromPrev(ShrdPtr<Node> x, int idx) {
-    ShrdPtr<Node> child = x->children[idx];
-    ShrdPtr<Node> sibling = x->children[idx - 1];
+void BTree<TKey, TElement>::BorrowFromPrev(ShrdPtr<Node> node, int index) {
+    ShrdPtr<Node> child = node->children[index];
+    ShrdPtr<Node> sibling = node->children[index - 1];
 
     for (int i = child->numKeys - 1; i >= 0; --i) {
         child->keys[i + 1] = child->keys[i];
@@ -394,32 +394,32 @@ void BTree<TKey, TElement>::BorrowFromPrev(ShrdPtr<Node> x, int idx) {
             child->children[i + 1] = child->children[i];
     }
 
-    child->keys[0] = x->keys[idx - 1];
-    child->values[0] = x->values[idx - 1];
+    child->keys[0] = node->keys[index - 1];
+    child->values[0] = node->values[index - 1];
 
     if (!child->isLeaf)
         child->children[0] = sibling->children[sibling->numKeys];
 
-    x->keys[idx - 1] = sibling->keys[sibling->numKeys - 1];
-    x->values[idx - 1] = sibling->values[sibling->numKeys - 1];
+    node->keys[index - 1] = sibling->keys[sibling->numKeys - 1];
+    node->values[index - 1] = sibling->values[sibling->numKeys - 1];
 
-    ++child->numKeys;
     --sibling->numKeys;
+    ++child->numKeys;
 }
 
 template<typename TKey, typename TElement>
-void BTree<TKey, TElement>::BorrowFromNext(ShrdPtr<Node> x, int idx) {
-    ShrdPtr<Node> child = x->children[idx];
-    ShrdPtr<Node> sibling = x->children[idx + 1];
+void BTree<TKey, TElement>::BorrowFromNext(ShrdPtr<Node> node, int index) {
+    ShrdPtr<Node> child = node->children[index];
+    ShrdPtr<Node> sibling = node->children[index + 1];
 
-    child->keys[child->numKeys] = x->keys[idx];
-    child->values[child->numKeys] = x->values[idx];
+    child->keys[child->numKeys] = node->keys[index];
+    child->values[child->numKeys] = node->values[index];
 
     if (!child->isLeaf)
         child->children[child->numKeys + 1] = sibling->children[0];
 
-    x->keys[idx] = sibling->keys[0];
-    x->values[idx] = sibling->values[0];
+    node->keys[index] = sibling->keys[0];
+    node->values[index] = sibling->values[0];
 
     for (int i = 1; i < sibling->numKeys; ++i) {
         sibling->keys[i - 1] = sibling->keys[i];
@@ -436,12 +436,12 @@ void BTree<TKey, TElement>::BorrowFromNext(ShrdPtr<Node> x, int idx) {
 }
 
 template<typename TKey, typename TElement>
-void BTree<TKey, TElement>::Merge(ShrdPtr<Node> x, int idx) {
-    ShrdPtr<Node> child = x->children[idx];
-    ShrdPtr<Node> sibling = x->children[idx + 1];
+void BTree<TKey, TElement>::Merge(ShrdPtr<Node> node, int index) {
+    ShrdPtr<Node> child = node->children[index];
+    ShrdPtr<Node> sibling = node->children[index + 1];
 
-    child->keys[order - 1] = x->keys[idx];
-    child->values[order - 1] = x->values[idx];
+    child->keys[order - 1] = node->keys[index];
+    child->values[order - 1] = node->values[index];
 
     for (int i = 0; i < sibling->numKeys; ++i) {
         child->keys[i + order] = sibling->keys[i];
@@ -453,17 +453,17 @@ void BTree<TKey, TElement>::Merge(ShrdPtr<Node> x, int idx) {
             child->children[i + order] = sibling->children[i];
     }
 
-    for (int i = idx + 1; i < x->numKeys; ++i) {
-        x->keys[i - 1] = x->keys[i];
-        x->values[i - 1] = x->values[i];
+    for (int i = index + 1; i < node->numKeys; ++i) {
+        node->keys[i - 1] = node->keys[i];
+        node->values[i - 1] = node->values[i];
     }
 
-    for (int i = idx + 2; i <= x->numKeys; ++i)
-        x->children[i - 1] = x->children[i];
+    for (int i = index + 2; i <= node->numKeys; ++i)
+        node->children[i - 1] = node->children[i];
 
-    child->numKeys += sibling->numKeys + 1;
-    --x->numKeys;
-    sibling.reset();
+    --node->numKeys;
+    --sibling->numKeys;
+    ++child->numKeys;
 }
 
 template<typename TKey, typename TElement>

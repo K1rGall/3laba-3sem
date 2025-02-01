@@ -43,30 +43,27 @@ void test_dictionary(const std::string& dictionary_name) {
     std::cout << "Evaluating " << dictionary_name << "..." << std::endl;
     DictionaryType dictionary;
 
-    // Adding entries
+
     dictionary.Add(101, "Alpha");
     dictionary.Add(202, "Beta");
     dictionary.Add(303, "Gamma");
 
-    // Testing Get
-    try {
-        if (dictionary.ContainsKey(202)) {
+
+    if (dictionary.ContainsKey(202)) {
             ValueType value = dictionary.Get(202);
             if (value != "Beta") {
                 std::cerr << "Issue: expected 'Beta', obtained '" << value << "'" << std::endl;
             } else {
                 std::cout << "Get(202) successful, value: " << value << std::endl;
             }
-        } else {
-            std::cerr << "Issue: Key 202 not found in dictionary." << std::endl;
-        }
-    } catch (const std::exception& e) {
-        std::cerr << "Exception during Get operation: " << e.what() << std::endl;
+    } else {
+        std::cerr << "Issue: Key 202 not found in dictionary." << std::endl;
     }
 
-    // Testing Update
-    try {
-        if (dictionary.ContainsKey(202)) {
+
+
+
+    if (dictionary.ContainsKey(202)) {
             dictionary.Update(202, "BetaUpdated");
             ValueType value = dictionary.Get(202);
             if (value != "BetaUpdated") {
@@ -74,14 +71,12 @@ void test_dictionary(const std::string& dictionary_name) {
             } else {
                 std::cout << "Update successful, new value of Get(202): " << value << std::endl;
             }
-        } else {
+    } else {
             std::cerr << "Issue: Key 202 not found for Update." << std::endl;
-        }
-    } catch (const std::exception& e) {
-        std::cerr << "Exception during Update verification: " << e.what() << std::endl;
     }
 
-    // Testing Remove
+
+
     dictionary.Remove(303);
     if (dictionary.ContainsKey(303)) {
         std::cerr << "Issue: Key 303 should have been removed." << std::endl;
@@ -89,7 +84,6 @@ void test_dictionary(const std::string& dictionary_name) {
         std::cout << "Remove successful, key 303 no longer exists in the " << dictionary_name << "." << std::endl;
     }
 
-    // Testing iterator
     std::cout << "Iterating over " << dictionary_name << ":" << std::endl;
     auto iterator = dictionary.GetIterator();
     try {

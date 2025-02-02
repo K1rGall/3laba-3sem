@@ -1,6 +1,6 @@
 #include "menu.h"
-
 #include <iostream>
+using namespace std;
 #include "DifferentStructures/SparseVector.h"
 #include "DifferentStructures/SparseMatrix.h"
 #include "DifferentStructures/HashTable.h"
@@ -57,9 +57,8 @@ void displayMenu() {
             return;
         }
 
-        auto sparseMatrix = UnqPtr<SparseMatrix<double>>(new SparseMatrix<double>(rows, cols, std::move(dictionary)));
-        handleMatrixOperations(sparseMatrix);
-
+        auto sparseMatrix = UnqPtr<SparseMatrix<double>>(new SparseMatrix<double>(rows, cols));
+        handleMatrixOperations(sparseMatrix); // передаем через UnqPtr
     } else {
         std::cerr << "Error: Invalid structure choice.\n";
     }
@@ -72,7 +71,8 @@ void handleVectorOperations(UnqPtr<SparseVector<double>> &sparseVector) {
         std::cout << "1. Set Element\n";
         std::cout << "2. Get Element\n";
         std::cout << "3. Display Elements\n";
-        std::cout << "4. Exit\n";
+        std::cout << "4. Multiply by Scalar\n";
+        std::cout << "5. Exit\n";
         std::cout << "Your choice: ";
         std::cin >> choice;
 
@@ -84,31 +84,22 @@ void handleVectorOperations(UnqPtr<SparseVector<double>> &sparseVector) {
             std::cout << "Enter value: ";
             std::cin >> value;
 
-            try {
-                sparseVector->SetElement(index, value);
-                std::cout << "[INFO] Element at index " << index << " set to " << value << ".\n";
-            } catch (const std::exception &e) {
-                std::cerr << "Error: " << e.what() << "\n";
-            }
-
+            sparseVector->SetElement(index, value);
         } else if (choice == 2) {
             int index;
-            std::cout << "Enter index (0-" << sparseVector->GetLength() - 1 << "): ";
+            std::cout << "Enter index: ";
             std::cin >> index;
-
-            try {
-                double value = sparseVector->GetElement(index);
-                std::cout << "[INFO] Value at index " << index << ": " << value << "\n";
-            } catch (const std::exception &e) {
-                std::cerr << "Error: " << e.what() << "\n";
-            }
-
+            std::cout << "Value: " << sparseVector->GetElement(index) << "\n";
         } else if (choice == 3) {
             updateVectorDisplay(*sparseVector);
         } else if (choice == 4) {
+            double scalar;
+            std::cout << "Enter scalar: ";
+            std::cin >> scalar;
+            sparseVector->MultiplyByScalar(scalar);
+            std::cout << "Vector multiplied successfully.\n";
+        } else if (choice == 5) {
             break;
-        } else {
-            std::cout << "Invalid choice. Try again.\n";
         }
     }
 }
@@ -120,47 +111,38 @@ void handleMatrixOperations(UnqPtr<SparseMatrix<double>> &sparseMatrix) {
         std::cout << "1. Set Element\n";
         std::cout << "2. Get Element\n";
         std::cout << "3. Display Elements\n";
-        std::cout << "4. Exit\n";
+        std::cout << "4. Multiply by Scalar\n";
+        std::cout << "5. Exit\n";
         std::cout << "Your choice: ";
         std::cin >> choice;
 
         if (choice == 1) {
             int row, col;
             double value;
-            std::cout << "Enter row (0-" << sparseMatrix->GetRows() - 1 << "): ";
+            std::cout << "Enter row: ";
             std::cin >> row;
-            std::cout << "Enter column (0-" << sparseMatrix->GetColumns() - 1 << "): ";
+            std::cout << "Enter column: ";
             std::cin >> col;
             std::cout << "Enter value: ";
             std::cin >> value;
-
-            try {
-                sparseMatrix->SetElement(row, col, value);
-                std::cout << "[INFO] Element at (" << row << ", " << col << ") set to " << value << ".\n";
-            } catch (const std::exception &e) {
-                std::cerr << "Error: " << e.what() << "\n";
-            }
-
+            sparseMatrix->SetElement(row, col, value);
         } else if (choice == 2) {
             int row, col;
-            std::cout << "Enter row (0-" << sparseMatrix->GetRows() - 1 << "): ";
+            std::cout << "Enter row: ";
             std::cin >> row;
-            std::cout << "Enter column (0-" << sparseMatrix->GetColumns() - 1 << "): ";
+            std::cout << "Enter column: ";
             std::cin >> col;
-
-            try {
-                double value = sparseMatrix->GetElement(row, col);
-                std::cout << "[INFO] Value at (" << row << ", " << col << "): " << value << "\n";
-            } catch (const std::exception &e) {
-                std::cerr << "Error: " << e.what() << "\n";
-            }
-
+            std::cout << "Value: " << sparseMatrix->GetElement(row, col) << "\n";
         } else if (choice == 3) {
             updateMatrixDisplay(*sparseMatrix);
         } else if (choice == 4) {
+            double scalar;
+            std::cout << "Enter scalar: ";
+            std::cin >> scalar;
+            sparseMatrix->MultiplyByScalar(scalar);
+            std::cout << "Matrix multiplied successfully.\n";
+        } else if (choice == 5) {
             break;
-        } else {
-            std::cout << "Invalid choice. Try again.\n";
         }
     }
 }
@@ -185,7 +167,7 @@ void updateMatrixDisplay(const SparseMatrix<double> &sparseMatrix) {
                 double value = sparseMatrix.GetElement(i, j);
                 std::cout << value << "\t";
             } catch (const std::exception &) {
-                std::cout << "0\t";
+                std::cout << "0\t"; // Empty cells
             }
         }
         std::cout << "\n";

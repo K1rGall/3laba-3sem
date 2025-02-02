@@ -15,6 +15,7 @@
 #include <QVBoxLayout>
 #include <chrono>
 #include "test_btree.h"
+using namespace std;
 
 std::vector<std::vector<int>> loadMatrixFromFile(const std::string& filename) {
     std::ifstream infile(filename);
@@ -257,53 +258,41 @@ void Menu(int argc, char* argv[]) {
                     QApplication app(argc, argv);
 
                     const std::vector<Point> result_time_matrix_hash = {
-                            {load_test_sparse_matrix(10000000, 100000).first, 100000},
-                            {load_test_sparse_matrix(5000000, 50000).first, 50000},
-                            {load_test_sparse_matrix(1000000, 10000).first, 10000},
-                            {load_test_sparse_matrix(500000, 5000).first, 5000},
-                            {load_test_sparse_matrix(100000, 1000).first, 1000},
-                            {load_test_sparse_matrix(50000, 500).first, 500},
-                            {load_test_sparse_matrix(10000, 100).first, 100}
+                            {load_test_sparse_matrix(50000, 5000).first, 5000},
+                            {load_test_sparse_matrix(10000, 1000).first, 1000},
+                            {load_test_sparse_matrix(5000, 500).first, 500},
+                            {load_test_sparse_matrix(1000, 100).first, 100}
                     };
 
                     const std::vector<Point> result_time_matrix_btree = {
-                            {load_test_sparse_matrix(10000000, 100000).second, 100000},
-                            {load_test_sparse_matrix(5000000, 50000).second, 50000},
-                            {load_test_sparse_matrix(1000000, 10000).second, 10000},
-                            {load_test_sparse_matrix(500000, 5000).second, 5000},
-                            {load_test_sparse_matrix(100000, 1000).second, 1000},
-                            {load_test_sparse_matrix(50000, 500).second, 500},
-                            {load_test_sparse_matrix(10000, 100).second, 100}
+                            {load_test_sparse_matrix(50000, 5000).second, 5000},
+                            {load_test_sparse_matrix(10000, 1000).second, 1000},
+                            {load_test_sparse_matrix(5000, 500).second, 500},
+                            {load_test_sparse_matrix(1000, 100).second, 100}
                     };
 
-                    // Generate data for vector graphs
                     const std::vector<Point> result_time_vector_hash = {
-                            {load_test_sparse_vector(1000000000, 100000).first, 100000},
-                            {load_test_sparse_vector(500000000, 50000).first, 50000},
-                            {load_test_sparse_vector(100000000, 10000).first, 10000},
-                            {load_test_sparse_vector(50000000, 5000).first, 5000},
-                            {load_test_sparse_vector(10000000, 1000).first, 1000},
-                            {load_test_sparse_vector(5000000, 500).first, 500},
-                            {load_test_sparse_vector(1000000, 100).first, 100}
+                            {load_test_sparse_vector(1000000, 5000).first, 5000},
+                            {load_test_sparse_vector(500000, 1000).first, 1000},
+                            {load_test_sparse_vector(100000, 500).first, 500},
+                            {load_test_sparse_vector(50000, 100).first, 100}
                     };
 
                     const std::vector<Point> result_time_vector_btree = {
-                            {load_test_sparse_vector(1000000000, 100000).second, 100000},
-                            {load_test_sparse_vector(500000000, 50000).second, 50000},
-                            {load_test_sparse_vector(100000000, 10000).second, 10000},
-                            {load_test_sparse_vector(50000000, 5000).second, 5000},
-                            {load_test_sparse_vector(10000000, 1000).second, 1000},
-                            {load_test_sparse_vector(5000000, 500).second, 500},
-                            {load_test_sparse_vector(1000000, 100).second, 100}
+                            {load_test_sparse_vector(1000000, 5000).second, 5000},
+                            {load_test_sparse_vector(500000, 1000).second, 1000},
+                            {load_test_sparse_vector(100000, 500).second, 500},
+                            {load_test_sparse_vector(50000, 100).second, 100}
                     };
 
+                    std::cout << "Generating matrix performance graph...\n";
                     plotGraphQtMatrix(result_time_matrix_hash, result_time_matrix_btree, "Matrix Performance Comparison");
 
-
+                    std::cout << "Generating vector performance graph...\n";
                     plotGraphQtVector(result_time_vector_hash, result_time_vector_btree, "Vector Performance Comparison");
 
+                    std::cout << "Graphs successfully generated.\n";
 
-                    // Run the application
                     app.exec();
                 } catch (const std::exception& e) {
                     std::cerr << "Error: " << e.what() << std::endl;
@@ -312,7 +301,7 @@ void Menu(int argc, char* argv[]) {
             case 5:
             {
                 displayMenu();
-                };
+            };
                 break;
             case 6: {
                 try {

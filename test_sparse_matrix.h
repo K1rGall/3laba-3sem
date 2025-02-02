@@ -13,7 +13,7 @@ inline void test_sparse_matrix() {
     {
         std::cout << "  [Test] Using HashTable as storage...\n";
         UnqPtr<IDictionary<IndexPair, double>> dictionary(new HashTable<IndexPair, double>());
-        SparseMatrix<double> matrix(4, 4, std::move(dictionary));
+        SparseMatrix<double> matrix(4, 4);
 
         matrix.SetElement(0, 1, 5.5);
         matrix.SetElement(2, 3, 10.1);
@@ -31,7 +31,7 @@ inline void test_sparse_matrix() {
     {
         std::cout << "  [Test] Using BTree as storage...\n";
         UnqPtr<IDictionary<IndexPair, double>> dictionary(new BTree<IndexPair, double>());
-        SparseMatrix<double> matrix(4, 4, std::move(dictionary));
+        SparseMatrix<double> matrix(4, 4);
 
         matrix.SetElement(0, 2, 8.8);
         matrix.SetElement(1, 1, 6.6);
@@ -64,13 +64,15 @@ inline std::pair<double, double> load_test_sparse_matrix(const int& size, const 
     {
         std::cout << "  [Benchmark] Testing SparseMatrix with HashTable...\n";
         UnqPtr<IDictionary<IndexPair, double>> dictionary(new HashTable<IndexPair, double>());
-        SparseMatrix<double> matrix(size, size, std::move(dictionary));
+        SparseMatrix<double> matrix(size, size);
 
         auto start = std::chrono::high_resolution_clock::now();
 
+        std::cout << "    Generating elements...\n";
         for (int i = 0; i < numElements; ++i) {
+            if (i % 1000 == 0) std::cout << "    Inserted " << i << " elements\n"; // Проверка прогресса
             int row = i % size;
-            int col = (i * 37) % size;  // Slightly altered hash distribution
+            int col = (i * 37) % size;
             matrix.SetElement(row, col, static_cast<double>(i * 0.1));
         }
 
@@ -84,13 +86,15 @@ inline std::pair<double, double> load_test_sparse_matrix(const int& size, const 
     {
         std::cout << "  [Benchmark] Testing SparseMatrix with BTree...\n";
         UnqPtr<IDictionary<IndexPair, double>> dictionary(new BTree<IndexPair, double>());
-        SparseMatrix<double> matrix(size, size, std::move(dictionary));
+        SparseMatrix<double> matrix(size, size);
 
         auto start = std::chrono::high_resolution_clock::now();
 
+        std::cout << "    Generating elements...\n";
         for (int i = 0; i < numElements; ++i) {
+            if (i % 1000 == 0) std::cout << "    Inserted " << i << " elements\n"; // Проверка прогресса
             int row = i % size;
-            int col = (i * 37) % size;  // Matching distribution for comparability
+            int col = (i * 37) % size;
             matrix.SetElement(row, col, static_cast<double>(i * 0.1));
         }
 

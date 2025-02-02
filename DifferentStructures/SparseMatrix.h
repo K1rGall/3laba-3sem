@@ -1,141 +1,97 @@
 #ifndef SPARSEMATRIX_H
 #define SPARSEMATRIX_H
 
-#include "IDictionary.h"
-#include "IndexPair.h"
-#include "ShrdPtr.h"
-#include "DynamicArraySmart.h"
-#include "KeyValue.h"
 #include <vector>
+#include <stdexcept>
+#include <iostream>
 
 template<typename TElement>
 class SparseMatrix {
 public:
-    SparseMatrix(int rows, int columns, UnqPtr<IDictionary<IndexPair, TElement>> dictionary)
-            : rows(rows), columns(columns), elements(std::move(dictionary)) {}
+    SparseMatrix(int rows, int columns)
+            : rows(rows), columns(columns), elements(rows, std::vector<TElement>(columns, TElement())) {}
 
-    ~SparseMatrix(){}
-
-    int GetRows() const
-    {
+    int GetRows() const {
         return rows;
     }
 
-    int GetColumns() const
-    {
+    int GetColumns() const {
         return columns;
     }
 
-    TElement GetElement(int row, int column) const
-    {
-        if (row < 0 || row >= rows || column < 0 || column >= columns)
-        {
-            throw std::out_of_range("Row or column index is out of bounds.");
-        }
-
-        IndexPair key(row, column);
-        if (elements->ContainsKey(key))
-        {
-            return elements->Get(key);
-        }
-        else
-        {
-            return TElement();
-        }
+    // Получение элемента матрицы
+    TElement GetElement(int row, int column) const {
+        CheckBounds(row, column);
+        return elements[row][column];
     }
 
-    void SetElement(int row, int column, const TElement& value)
-    {
-        if (row < 0 || row >= rows || column < 0 || column >= columns)
-        {
-            throw std::out_of_range("Row or column index is out of bounds.");
-        }
-
-        IndexPair key(row, column);
-        if (value != TElement())
-        {
-            if (elements->ContainsKey(key))
-            {
-                elements->Update(key, value);
-            }
-            else
-            {
-                elements->Add(key, value);
-            }
-        }
-        else
-        {
-            RemoveElement(key.row, key.column);
-        }
+    // Установка элемента в матрицу
+    void SetElement(int row, int column, const TElement& value) {
+        CheckBounds(row, column);
+        elements[row][column] = value;
     }
 
+    // Удаление элемента (устанавливаем в значение по умолчанию)
     void RemoveElement(int row, int column) {
-        if (row < 0 || row >= rows || column < 0 || column >= columns) {
-            throw std::out_of_range("Row or column index is out of bounds.");
-        }
+        CheckBounds(row, column);
+        elements[row][column] = TElement();
+    }
 
-        IndexPair key(row, column);
-        if (elements->ContainsKey(key)) {
-            elements->Remove(key);
+    // Применение функции ко всем элементам
+    void ForEach(void (*func)(int, int, const TElement&)) const {
+        for (int i = 0; i < rows; ++i) {
+            for (int j = 0; j < columns; ++j) {
+                if (elements[i][j] != TElement()) {
+                    func(i, j, elements[i][j]);
+                }
+            }
         }
     }
 
-    void ForEach(void (*func)(const IndexPair &, const TElement &)) const {
-        auto iterator = elements->GetIterator();
+    // Применение функции ко всем элементам
+#include <functional>  // Добавляем для std::function
 
-        while (iterator->MoveNext()) {
-            IndexPair key = iterator->GetCurrentKey();
-            TElement value = iterator->GetCurrentValue();
-            func(key, value);
+    void Map(std::function<TElement(TElement)> func) {
+        for (int i = 0; i < rows; ++i) {
+            for (int j = 0; j < columns; ++j) {
+                elements[i][j] = func(elements[i][j]);
+            }
         }
     }
 
-
-
-    void Map(TElement (*func)(TElement))
-    {
-        DynamicArraySmart<KeyValue<IndexPair, TElement>> updates;
-        auto iterator = elements->GetIterator();
-        while (iterator->MoveNext())
-        {
-            IndexPair key = iterator->GetCurrentKey();
-            TElement value = iterator->GetCurrentValue();
-            TElement newValue = func(value);
-            updates.Append(KeyValue<IndexPair, TElement>(key, newValue));
-        }
-        for (int i = 0; i < updates.GetLength(); ++i)
-        {
-            const KeyValue<IndexPair, TElement>& kv = updates.Get(i);
-            elements->Update(kv.key, kv.value);
+    // Функция умножения всех элементов матрицы на число
+    void MultiplyByScalar(TElement scalar) {
+        if (scalar == 0) {
+            for (int i = 0; i < rows; ++i) {
+                for (int j = 0; j < columns; ++j) {
+                    elements[i][j] = TElement();
+                }
+            }
+        } else {
+            Map([scalar](TElement x) { return x * scalar; });
         }
     }
 
-
-    TElement Reduce(TElement (*func)(TElement, TElement), TElement initial) const
-    {
+    TElement Reduce(TElement (*func)(TElement, TElement), TElement initial) const {
         TElement result = initial;
-        auto iterator = elements->GetIterator();
-        while (iterator->MoveNext())
-        {
-            TElement value = iterator->GetCurrentValue();
-            result = func(result, value);
+        for (int i = 0; i < rows; ++i) {
+            for (int j = 0; j < columns; ++j) {
+                result = func(result, elements[i][j]);
+            }
         }
         return result;
-    }
-
-    UnqPtr<IDictionaryIterator<IndexPair, TElement>> GetIterator() const
-    {
-        return elements->GetIterator();
-    }
-
-    const IDictionary<IndexPair, TElement>& GetElements() const {
-        return *elements;
     }
 
 private:
     int rows;
     int columns;
-    UnqPtr<IDictionary<IndexPair, TElement>> elements;
+    std::vector<std::vector<TElement>> elements;
+
+    void CheckBounds(int row, int column) const {
+        if (row < 0 || row >= rows || column < 0 || column >= columns) {
+            throw std::out_of_range("Row or column index is out of bounds.");
+        }
+    }
 };
 
 #endif // SPARSEMATRIX_H

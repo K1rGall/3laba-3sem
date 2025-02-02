@@ -185,15 +185,9 @@ CMakeFiles/3_laba_3_sem.dir/test.cpp.obj: \
  C:/Program\ Files/JetBrains/CLion2024.1.4/bin/mingw/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/bits/ranges_algobase.h \
  C:/Program\ Files/JetBrains/CLion2024.1.4/bin/mingw/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/pstl/glue_memory_defs.h \
  C:/Program\ Files/JetBrains/CLion2024.1.4/bin/mingw/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/pstl/execution_defs.h \
- C:\Users\Admin\CLionProjects\3\ laba\ 3\ sem\DifferentStructures/SparseMatrix.h \
- C:\Users\Admin\CLionProjects\3\ laba\ 3\ sem\DifferentStructures/IndexPair.h \
  C:/Program\ Files/JetBrains/CLion2024.1.4/bin/mingw/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/iostream \
  C:/Program\ Files/JetBrains/CLion2024.1.4/bin/mingw/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/istream \
  C:/Program\ Files/JetBrains/CLion2024.1.4/bin/mingw/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/bits/istream.tcc \
- C:\Users\Admin\CLionProjects\3\ laba\ 3\ sem\DifferentStructures/BTree.h \
- C:\Users\Admin\CLionProjects\3\ laba\ 3\ sem\DifferentStructures/UnqPtr.h \
- C:\Users\Admin\CLionProjects\3\ laba\ 3\ sem\DifferentStructures/HashTable.h \
- C:\Users\Admin\CLionProjects\3\ laba\ 3\ sem\DifferentStructures/LinkedListSmart.h \
  C:/Program\ Files/JetBrains/CLion2024.1.4/bin/mingw/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/functional \
  C:/Program\ Files/JetBrains/CLion2024.1.4/bin/mingw/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/bits/std_function.h \
  C:/Program\ Files/JetBrains/CLion2024.1.4/bin/mingw/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/unordered_map \
@@ -210,6 +204,12 @@ CMakeFiles/3_laba_3_sem.dir/test.cpp.obj: \
  C:/Program\ Files/JetBrains/CLion2024.1.4/bin/mingw/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/bits/uniform_int_dist.h \
  C:/Program\ Files/JetBrains/CLion2024.1.4/bin/mingw/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/bits/move_only_function.h \
  C:/Program\ Files/JetBrains/CLion2024.1.4/bin/mingw/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/bits/mofunc_impl.h \
+ C:\Users\Admin\CLionProjects\3\ laba\ 3\ sem\DifferentStructures/SparseMatrix.h \
+ C:\Users\Admin\CLionProjects\3\ laba\ 3\ sem\DifferentStructures/BTree.h \
+ C:\Users\Admin\CLionProjects\3\ laba\ 3\ sem\DifferentStructures/UnqPtr.h \
+ C:\Users\Admin\CLionProjects\3\ laba\ 3\ sem\DifferentStructures/HashTable.h \
+ C:\Users\Admin\CLionProjects\3\ laba\ 3\ sem\DifferentStructures/LinkedListSmart.h \
+ C:\Users\Admin\CLionProjects\3\ laba\ 3\ sem\DifferentStructures/IndexPair.h \
  C:/Program\ Files/JetBrains/CLion2024.1.4/bin/mingw/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/fstream \
  C:/Program\ Files/JetBrains/CLion2024.1.4/bin/mingw/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/bits/codecvt.h \
  C:/Program\ Files/JetBrains/CLion2024.1.4/bin/mingw/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/x86_64-w64-mingw32/bits/basic_file.h \

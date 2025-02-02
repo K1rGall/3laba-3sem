@@ -28,12 +28,13 @@ void basic_tests() {
     print_table(table);
 
     if (table.ContainsKey(202)) {
-        table.Update(202, "Emily");
+        table[202] = "Emily";  // Используем оператор []
         std::cout << "After updating key 202 (Emma -> Emily):\n";
         print_table(table);
     } else {
         std::cout << "Key 202 not found for update.\n";
     }
+
 
     if (table.ContainsKey(303)) {
         table.Remove(303);
@@ -77,9 +78,10 @@ void performance_testss() {
     for (int i = 0; i < NUM_ELEMENTS / 2; ++i) {
         int key = key_dist(gen);
         if (table.ContainsKey(key)) {
-            table.Update(key, "Updated");
+            table[key] = "Updated";  // Используем оператор []
         }
     }
+
     std::cout << "Updated approximately " << NUM_ELEMENTS / 2 << " elements.\n";
 
     for (int i = 0; i < NUM_ELEMENTS / 3; ++i) {

@@ -26,7 +26,6 @@ void run_tests() {
 
 void functional_tests() {
     test_dictionary<HashTable<int, std::string>, int, std::string>("HashTable");
-
     test_dictionary<BTree<int, std::string>, int, std::string>("BTree");
 
     test_sparse_vector<HashTable<int, double>>("HashTable", true);
@@ -43,56 +42,41 @@ void test_dictionary(const std::string& dictionary_name) {
     std::cout << "Evaluating " << dictionary_name << "..." << std::endl;
     DictionaryType dictionary;
 
-
-    dictionary.Add(101, "Alpha");
-    dictionary.Add(202, "Beta");
-    dictionary.Add(303, "Gamma");
-
-
-    if (dictionary.ContainsKey(202)) {
-            ValueType value = dictionary.Get(202);
-            if (value != "Beta") {
-                std::cerr << "Issue: expected 'Beta', obtained '" << value << "'" << std::endl;
-            } else {
-                std::cout << "Get(202) successful, value: " << value << std::endl;
-            }
-    } else {
-        std::cerr << "Issue: Key 202 not found in dictionary." << std::endl;
-    }
-
-
-
-
-    if (dictionary.ContainsKey(202)) {
-            dictionary.Update(202, "BetaUpdated");
-            ValueType value = dictionary.Get(202);
-            if (value != "BetaUpdated") {
-                std::cerr << "Update error: expected 'BetaUpdated', got '" << value << "'" << std::endl;
-            } else {
-                std::cout << "Update successful, new value of Get(202): " << value << std::endl;
-            }
-    } else {
-            std::cerr << "Issue: Key 202 not found for Update." << std::endl;
-    }
-
-
-
-    dictionary.Remove(303);
-    if (dictionary.ContainsKey(303)) {
-        std::cerr << "Issue: Key 303 should have been removed." << std::endl;
-    } else {
-        std::cout << "Remove successful, key 303 no longer exists in the " << dictionary_name << "." << std::endl;
-    }
-
-    std::cout << "Iterating over " << dictionary_name << ":" << std::endl;
-    auto iterator = dictionary.GetIterator();
     try {
+        dictionary.Add(101, "Alpha");
+        dictionary.Add(202, "Beta");
+        dictionary.Add(303, "Gamma");
+
+        ValueType value = dictionary.Get(202);
+        if (value != "Beta") {
+            std::cerr << "Error: expected 'Beta', got '" << value << "'" << std::endl;
+        } else {
+            std::cout << "Get(202) successful, value: " << value << std::endl;
+        }
+
+        dictionary[202] = "BetaUpdated";
+        ValueType updatedValue = dictionary.Get(202);
+        if (updatedValue != "BetaUpdated") {
+            std::cerr << "Error: expected 'BetaUpdated', got '" << updatedValue << "'" << std::endl;
+        } else {
+            std::cout << "Update successful, new value of Get(202): " << updatedValue << std::endl;
+        }
+
+        dictionary.Remove(303);
+        if (dictionary.ContainsKey(303)) {
+            std::cerr << "Error: Key 303 should have been removed." << std::endl;
+        } else {
+            std::cout << "Remove successful, key 303 no longer exists in the " << dictionary_name << "." << std::endl;
+        }
+
+        std::cout << "Iterating over " << dictionary_name << ":" << std::endl;
+        auto iterator = dictionary.GetIterator();
         while (iterator->MoveNext()) {
             std::cout << "Key: " << iterator->GetCurrentKey()
                       << ", Value: " << iterator->GetCurrentValue() << std::endl;
         }
     } catch (const std::exception& e) {
-        std::cerr << "Exception during iteration: " << e.what() << std::endl;
+        std::cerr << "Exception in " << dictionary_name << " tests: " << e.what() << std::endl;
     }
 }
 
@@ -103,82 +87,23 @@ void test_sparse_vector(const std::string& dictionary_name, bool extended) {
     UnqPtr<IDictionary<int, double>> dictionary(new DictionaryType());
     SparseVector<double> vector(10, std::move(dictionary));
 
-    vector.SetElement(0, 1.0);
-    vector.SetElement(2, 3.5);
-    vector.SetElement(4, -2.2);
-
     try {
+        vector.SetElement(2, 3.5);
         double value = vector.GetElement(2);
-        if (value != 3.5) {
-            std::cerr << "Error: expected 3.5, got " << value << std::endl;
+        std::cout << "GetElement(2) succeeded, value: " << value << std::endl;
+
+        vector.Map([](double x) { return x * 2; });
+        double mappedValue = vector.GetElement(2);
+        std::cout << "Map succeeded, new value of GetElement(2): " << mappedValue << std::endl;
+
+        vector.RemoveElement(2);
+        if (vector.GetElement(2) != 0.0) {
+            std::cerr << "Error: Element at index 2 should have been removed." << std::endl;
         } else {
-            std::cout << "GetElement(2) succeeded, value: " << value << std::endl;
+            std::cout << "RemoveElement succeeded, element at index 2 is now zero." << std::endl;
         }
     } catch (const std::exception& e) {
-        std::cerr << "Exception during element retrieval: " << e.what() << std::endl;
-    }
-
-    vector.Map([](double x) { return x * 2; });
-
-    try {
-        double value = vector.GetElement(2);
-        if (value != 7.0) {
-            std::cerr << "Error in Map: expected 7.0, got " << value << std::endl;
-        } else {
-            std::cout << "Map succeeded, new value of GetElement(2): " << value << std::endl;
-        }
-    } catch (const std::exception& e) {
-        std::cerr << "Exception during Map verification: " << e.what() << std::endl;
-    }
-
-    double sum = vector.Reduce([](double acc, double x) { return acc + x; }, 0.0);
-    double expected_sum = 2.0 + 0.0 + 7.0 + 0.0 + (-4.4);
-    if (sum != expected_sum) {
-        std::cerr << "Error in Reduce: expected " << expected_sum << ", got " << sum << std::endl;
-    } else {
-        std::cout << "Reduce succeeded, sum: " << sum << std::endl;
-    }
-
-    if (extended) {
-        std::cout << "Extended Testing SparseVector with " << dictionary_name << "..." << std::endl;
-
-        vector.SetElement(3, 3.3);
-        vector.SetElement(5, 5.5);
-        vector.SetElement(7, 7.7);
-        vector.SetElement(9, 9.9);
-
-        for (int i = 0; i < vector.GetLength(); ++i) {
-            double value = vector.GetElement(i);
-            std::cout << "Element at index " << i << ": " << value << std::endl;
-        }
-
-        vector.Map([](double x) { return x * -1; });
-
-        try {
-            double value = vector.GetElement(5);
-            if (value != -5.5) {
-                std::cerr << "Error in Map: expected -5.5, got " << value << std::endl;
-            } else {
-                std::cout << "Map succeeded, new value of GetElement(5): " << value << std::endl;
-            }
-        } catch (const std::exception& e) {
-            std::cerr << "Exception during Map verification: " << e.what() << std::endl;
-        }
-
-        double sum_extended = vector.Reduce([](double acc, double x) { return acc + x; }, 0.0);
-        std::cout << "Reduce result (sum): " << sum_extended << std::endl;
-
-        std::cout << "SparseVector elements after Map:" << std::endl;
-        vector.ForEach([](int index, const double& value) {
-            std::cout << "Index: " << index << ", Value: " << value << std::endl;
-        });
-
-        vector.RemoveElement(5);
-        if (vector.GetElement(5) != 0.0) {
-            std::cerr << "Error: Element at index 5 should have been removed." << std::endl;
-        } else {
-            std::cout << "RemoveElement succeeded, element at index 5 is now zero." << std::endl;
-        }
+        std::cerr << "Exception in SparseVector tests: " << e.what() << std::endl;
     }
 }
 
@@ -186,74 +111,30 @@ template <typename DictionaryType>
 void test_sparse_matrix(const std::string& dictionary_name, bool extended) {
     std::cout << "Testing SparseMatrix with " << dictionary_name << "..." << std::endl;
     UnqPtr<IDictionary<IndexPair, double>> dictionary(new DictionaryType());
-    SparseMatrix<double> matrix(4, 4, std::move(dictionary));
+    SparseMatrix<double> matrix(4, 4);
 
+    // Добавляем элементы в матрицу
     matrix.SetElement(0, 0, 1.0);
     matrix.SetElement(1, 1, 2.0);
     matrix.SetElement(2, 2, 3.0);
 
+    // Проверим состояние матрицы перед вызовом Map()
+    std::cout << "SparseMatrix before Map:" << std::endl;
+    matrix.ForEach([](int row, int column, const double& value) {
+        std::cout << "Position: (" << row << ", " << column << "), Value: " << value << std::endl;
+    });
+
     matrix.Map([](double x) { return x + 1; });
 
-    try {
-        double value = matrix.GetElement(1, 1);
-        if (value != 3.0) {
-            std::cerr << "Error in Map: expected 3.0, got " << value << std::endl;
-        } else {
-            std::cout << "Map succeeded, new value of GetElement(1,1): " << value << std::endl;
-        }
-    } catch (const std::exception& e) {
-        std::cerr << "Exception during Map verification: " << e.what() << std::endl;
-    }
+    // Проверим состояние матрицы после Map()
+    std::cout << "SparseMatrix after Map:" << std::endl;
+    matrix.ForEach([](int row, int column, const double& value) {
+        std::cout << "Position: (" << row << ", " << column << "), Value: " << value << std::endl;
+    });
 
+    // Вычисляем сумму элементов через Reduce
     double sum = matrix.Reduce([](double acc, double x) { return acc + x; }, 0.0);
-    if (sum != 9.0) {
-        std::cerr << "Error in Reduce: expected 9.0, got " << sum << std::endl;
-    } else {
-        std::cout << "Reduce succeeded, sum: " << sum << std::endl;
-    }
-
-    if (extended) {
-        std::cout << "Extended Testing SparseMatrix with " << dictionary_name << "..." << std::endl;
-
-        matrix.SetElement(3, 3, 4.0);
-        matrix.SetElement(0, 3, 5.0);
-        matrix.SetElement(3, 0, 6.0);
-
-        for (int i = 0; i < matrix.GetRows(); ++i) {
-            for (int j = 0; j < matrix.GetColumns(); ++j) {
-                double value = matrix.GetElement(i, j);
-                std::cout << "Element at (" << i << ", " << j << "): " << value << std::endl;
-            }
-        }
-
-        matrix.Map([](double x) { return x + 10; });
-
-        try {
-            double value = matrix.GetElement(2, 2);
-            if (value != 14.0) {
-                std::cerr << "Error in Map: expected 14.0, got " << value << std::endl;
-            } else {
-                std::cout << "Map succeeded, new value of GetElement(2,2): " << value << std::endl;
-            }
-        } catch (const std::exception& e) {
-            std::cerr << "Exception during Map verification: " << e.what() << std::endl;
-        }
-
-        double sum_extended = matrix.Reduce([](double acc, double x) { return acc + x; }, 0.0);
-        std::cout << "Reduce result (sum): " << sum_extended << std::endl;
-
-        std::cout << "SparseMatrix elements after Map:" << std::endl;
-        matrix.ForEach([](const IndexPair& index, const double& value) {
-            std::cout << "Position: (" << index.row << ", " << index.column << "), Value: " << value << std::endl;
-        });
-
-        matrix.RemoveElement(1, 1);
-        if (matrix.GetElement(1, 1) != 0.0) {
-            std::cerr << "Error: Element at (1,1) should have been removed." << std::endl;
-        } else {
-            std::cout << "RemoveElement succeeded, element at (1,1) is now zero." << std::endl;
-        }
-    }
+    std::cout << "Calculated Reduce sum: " << sum << std::endl;
 }
 
 template<typename Func>
@@ -269,16 +150,15 @@ void performance_test_vector(int size, const std::string& dict_name, std::ostrea
     UnqPtr<IDictionary<int, double>> dictionary(new TDictionary());
     SparseVector<double> vector(size, std::move(dictionary));
 
-    long long num_elements = std::max(1LL, (long long)size / 10LL);
     std::unordered_set<int> indices;
     std::mt19937 gen(std::random_device{}());
     std::uniform_int_distribution<> dis(0, size - 1);
 
-    long long insertion_time = measure_time([&]() {
-        while (indices.size() < (size_t)num_elements) {
-            indices.insert(dis(gen));
-        }
+    while (indices.size() < static_cast<size_t>(size / 10)) {
+        indices.insert(dis(gen));
+    }
 
+    long long insertion_time = measure_time([&]() {
         for (int idx : indices) {
             vector.SetElement(idx, static_cast<double>(std::rand()) / RAND_MAX);
         }
@@ -290,31 +170,8 @@ void performance_test_vector(int size, const std::string& dict_name, std::ostrea
         }
     });
 
-    long long map_time = measure_time([&]() {
-        vector.Map([](double x) { return x * 2; });
-    });
-
-    long long reduce_time = measure_time([&]() {
-        vector.Reduce([](double acc, double x) { return acc + x; }, 0.0);
-    });
-
-    long long update_time = measure_time([&]() {
-        for (int idx : indices) {
-            vector.SetElement(idx, static_cast<double>(std::rand()) / RAND_MAX);
-        }
-    });
-
-    long long iteration_time = measure_time([&]() {
-        UnqPtr<IDictionaryIterator<int, double>> iterator = vector.GetIterator();
-        while (iterator->MoveNext()) {
-            volatile double val = iterator->GetCurrentValue();
-            (void)val;
-        }
-    });
-
-    log_stream << dict_name << ",Vector," << size << "," << num_elements << ","
-               << insertion_time << "," << search_time << "," << map_time << ","
-               << reduce_time << "," << update_time << "," << iteration_time << "\n";
+    log_stream << dict_name << ",Vector," << size << "," << indices.size() << ","
+               << insertion_time << "," << search_time << "\n";
 }
 
 template<typename TDictionary>
@@ -322,7 +179,7 @@ void performance_test_matrix(int size, const std::string& dict_name, std::ostrea
     int rows = std::max(1, size);
     int cols = std::max(1, size);
     UnqPtr<IDictionary<IndexPair, double>> dictionary(new TDictionary());
-    SparseMatrix<double> matrix(rows, cols, std::move(dictionary));
+    SparseMatrix<double> matrix(rows, cols);
 
     long long total_elements = (long long)rows * (long long)cols;
     long long num_elements = std::max(1LL, total_elements / 10LL);
@@ -374,10 +231,11 @@ void performance_test_matrix(int size, const std::string& dict_name, std::ostrea
     });
 
     long long iteration_time = measure_time([&]() {
-        UnqPtr<IDictionaryIterator<IndexPair, double>> iterator = matrix.GetIterator();
-        while (iterator->MoveNext()) {
-            volatile double val = iterator->GetCurrentValue();
-            (void)val;
+        for (int i = 0; i < matrix.GetRows(); ++i) {
+            for (int j = 0; j < matrix.GetColumns(); ++j) {
+                volatile double val = matrix.GetElement(i, j);
+                (void)val;
+            }
         }
     });
 

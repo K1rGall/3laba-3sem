@@ -14,13 +14,13 @@
 template<typename TKey, typename TElement>
 class HashTable : public IDictionary<TKey, TElement> {
 public:
+    TElement& operator[](const TKey &key);
+
     HashTable(size_t initialCapacity = 16);
 
     virtual ~HashTable();
 
     virtual size_t GetCount() const override;
-
-    virtual size_t GetCapacity() const override;
 
     virtual TElement Get(const TKey &key) const override;
 
@@ -29,8 +29,6 @@ public:
     virtual void Add(const TKey &key, const TElement &element) override;
 
     virtual void Remove(const TKey &key) override;
-
-    virtual void Update(const TKey &key, const TElement &element) override;
 
     virtual UnqPtr<IDictionaryIterator<TKey, TElement>> GetIterator() const override;
 
@@ -91,11 +89,6 @@ size_t HashTable<TKey, TElement>::GetCount() const {
 }
 
 template<typename TKey, typename TElement>
-size_t HashTable<TKey, TElement>::GetCapacity() const {
-    return capacity;
-}
-
-template<typename TKey, typename TElement>
 size_t HashTable<TKey, TElement>::HashFunction(const TKey &key) const {
     if constexpr (std::is_same<TKey, IndexPair>::value) {
         return IndexPairHash()(key);
@@ -121,7 +114,7 @@ void HashTable<TKey, TElement>::Add(const TKey &key, const TElement &element) {
     ++count;
 
     if (static_cast<double>(count) / capacity > 0.75) {
-        Rehash();
+        Rehash(); // Автоматически расширяем таблицу при необходимости
     }
 }
 
@@ -136,21 +129,6 @@ void HashTable<TKey, TElement>::Remove(const TKey &key) {
         if ((*iterator).key == key) {
             chain.RemoveAt(i);
             --count;
-            return;
-        }
-    }
-
-    throw std::runtime_error("Key not found.");
-}
-
-template<typename TKey, typename TElement>
-void HashTable<TKey, TElement>::Update(const TKey &key, const TElement &element) {
-    size_t index = HashFunction(key) % capacity;
-    LinkedListSmart<KeyValuePair> &chain = table->Get(static_cast<int>(index));
-
-    for (int i = 0; i < chain.GetLength(); ++i) {
-        if (chain.Get(i).key == key) {
-            chain.Get(i).value = element;
             return;
         }
     }
@@ -189,7 +167,7 @@ TElement HashTable<TKey, TElement>::Get(const TKey &key) const {
 template<typename TKey, typename TElement>
 void HashTable<TKey, TElement>::Rehash() {
     size_t newCapacity = capacity * 2;
-    UnqPtr<DynamicArraySmart<LinkedListSmart<KeyValuePair>>> newTable(
+    auto newTable = UnqPtr<DynamicArraySmart<LinkedListSmart<KeyValuePair>>>(
             new DynamicArraySmart<LinkedListSmart<KeyValuePair>>(static_cast<int>(newCapacity)));
 
     for (size_t i = 0; i < newCapacity; ++i) {
@@ -199,7 +177,7 @@ void HashTable<TKey, TElement>::Rehash() {
     for (size_t i = 0; i < capacity; ++i) {
         LinkedListSmart<KeyValuePair> &chain = table->Get(static_cast<int>(i));
         for (int j = 0; j < chain.GetLength(); ++j) {
-            const KeyValuePair &kvp = chain.Get(j);
+            KeyValuePair kvp = chain.Get(j);
             size_t index = HashFunction(kvp.key) % newCapacity;
             newTable->Get(static_cast<int>(index)).Append(kvp);
         }
@@ -207,6 +185,34 @@ void HashTable<TKey, TElement>::Rehash() {
 
     table = std::move(newTable);
     capacity = newCapacity;
+}
+
+template<typename TKey, typename TElement>
+TElement& HashTable<TKey, TElement>::operator[](const TKey &key) {
+    if (!table) {
+        throw std::runtime_error("HashTable is not initialized.");
+    }
+
+    size_t index = HashFunction(key) % capacity;
+    LinkedListSmart<KeyValuePair> &chain = table->Get(static_cast<int>(index));
+
+    for (int i = 0; i < chain.GetLength(); ++i) {
+        if (chain.Get(i).key == key) {
+            return chain.Get(i).value;
+        }
+    }
+
+    // Добавляем элемент, если его нет
+    chain.Append(KeyValuePair(key, TElement()));
+    ++count;
+
+    // Проверяем необходимость рехеширования
+    if (static_cast<double>(count) / capacity > 0.75) {
+        Rehash();
+        index = HashFunction(key) % capacity;
+    }
+
+    return chain.Get(chain.GetLength() - 1).value;
 }
 
 template<typename TKey, typename TElement>
